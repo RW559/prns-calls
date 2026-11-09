@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PRNS Building Services · Client portal</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1E222B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="PRNS Calls">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+html,body{margin:0;height:100%;background:#1E222B;color:#C9CED6;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.l{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;box-sizing:border-box;text-align:center}
+.l img{width:96px;height:96px;border-radius:22px}
+.l button{display:none;height:48px;padding:0 22px;border:0;border-radius:8px;background:#CC3F2B;color:#fff;font-size:16px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="l"><img src="/icon-192.png" alt="PRNS Building Services"><div id="t">Loading your calls…</div><button type="button" id="r">Try again</button></div>
+<script>
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbzPDTaTrrdZk9o52ivgwA-WjjAS8IVEAEc8FSMou9PixF3HD_H3a2RfGEALfGitUJGF/exec';
+  // These stay in the page after the portal is drawn, so the phone keeps treating it as the PRNS Calls app.
+  var KEEP = '<meta name="theme-color" content="#1E222B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">' +
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="PRNS Calls">' +
+    '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="icon" href="/icon-192.png">' +
+    '<script>window.PORTAL_APP=true;<\/script>';
+  function load() {
+    document.getElementById('t').textContent = 'Loading your calls…';
+    document.getElementById('r').style.display = 'none';
+    fetch(API + '?shell=1', { credentials: 'omit', cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.text(); })
+      .then(function (h) {
+        h = h.indexOf('<head>') >= 0 ? h.replace('<head>', '<head>' + KEEP) : KEEP + h;
+        document.open(); document.write(h); document.close();
+      })
+      .catch(function () {
+        document.getElementById('t').textContent = 'The app couldn’t connect just now. Please check you have signal and try again.';
+        document.getElementById('r').style.display = 'inline-block';
+      });
+  }
+  document.getElementById('r').addEventListener('click', load);
+  if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('/sw.js'); } catch (e) { /* the app still works without it */ } }
+  load();
+})();
+</script>
+</body>
+</html>
